@@ -6,13 +6,13 @@
 #include "json_parser.h"
 
 void skip_whitespaces(char** str){
-    // printf("moving pointer\n");
+    // // printf("moving pointer\n");
     while((**str) && (**str == ' ' || **str == '\t' || **str == '\n')){
-        printf("%c moving\n", **str);
+        // printf("%c moving\n", **str);
         *str += 1;
         
     }
-    printf("done skipping\n");
+    // printf("done skipping\n");
 }
 
 node* str_to_obj(char** str){
@@ -36,7 +36,7 @@ node* parse_val(char** str){
         n->type = NONE;
     }
     else if(**str == '\"'){
-        printf("parsing str\n");
+        // printf("parsing str\n");
         n = parse_string(str);
     }
     else if(**str == '-' || isdigit(**str)){
@@ -55,7 +55,7 @@ node* parse_val(char** str){
         n->val.num_val = 0;
     }
     else if(!n){ // error
-        printf("err parsing");
+        // printf("err parsing");
         return NULL;
     }
     return n;
@@ -65,11 +65,11 @@ node* parse_val(char** str){
 node* parse_key_val(char** str){
     skip_whitespaces(str);
     char* itr = *str;
-    printf("%c\n", **str);
+    // printf("%c\n", **str);
     if (**str != '\"')
         return NULL;
 
-    printf("parsing key val\n");
+    // printf("parsing key val\n");
     *str += 1;
     itr = *str;
     while(*itr != '\"')
@@ -82,7 +82,7 @@ node* parse_key_val(char** str){
     
     *itr = '\0'; //trick strcpy
     strcpy(key, *str);
-    printf("%s\n", key);
+    // printf("%s\n", key);
     *itr = '\"'; // return to original
     
     *str = itr + 1; //move the pointer past the name
@@ -95,7 +95,7 @@ node* parse_key_val(char** str){
     *str += 1;
 
     skip_whitespaces(str);
-    printf("%s\n", *str);
+    // printf("%s\n", *str);
     
     //start processing the value
     node* n = parse_val(str);
@@ -110,7 +110,7 @@ node* parse_key_val(char** str){
 }
 
 node* parse_object(char** str){
-    // printf("%d\n", **str == ' ');
+    // // printf("%d\n", **str == ' ');
     skip_whitespaces(str);
     if(**str != '{')//malformed
         return NULL;
@@ -121,7 +121,7 @@ node* parse_object(char** str){
     skip_whitespaces(str);
     if(**str == '}')//empty
         return n;
-    printf("parsing object\n");
+    // printf("parsing object\n");
     node* first_child = NULL;
     node* last_itr = NULL;
 
@@ -147,7 +147,7 @@ node* parse_object(char** str){
         }
 
         skip_whitespaces(str);
-        printf("%c\n", **str);
+        // printf("%c\n", **str);
         if(**str == '}'){
             break; // exit the loop
         } else if(**str == ','){
@@ -240,7 +240,7 @@ node* parse_string(char** str){
     char* val = (char*)malloc(len + 1);
     *itr = '\0';
     strcpy(val, *str);
-    printf("%s\n", val);
+    // printf("%s\n", val);
     *itr = '\"';
 
     *str = itr + 1; //move the pointer past the parsed
@@ -294,10 +294,10 @@ node* parse_json(char* str){
     // to make the signature easier to cope with
     // and to make the changes done in pointer traversal transparent to the passed pointer
     skip_whitespaces(itr);
-    // printf("%c\n", **itr);
+    // // printf("%c\n", **itr);
     if (**itr != '{') //malformed
         return NULL;
-    printf("starting parsing\n");
+    // printf("starting parsing\n");
     node* res = parse_object(itr);
     return res;
 }
@@ -310,7 +310,7 @@ int main(){
     {
         printf("invalid json\n");
     } else {
-        printf("%s", res->val.first_child->next->val.first_child->val.str_val);
+        printf("%s\n", res->val.first_child->next->val.first_child->val.str_val);
     }
     
 }

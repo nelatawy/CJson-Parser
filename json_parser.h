@@ -25,6 +25,7 @@ typedef struct node{
 } node;
 
 
+node* parse_val(char**);
 
 node* parse_key_val(char**);
 
