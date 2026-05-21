@@ -8,13 +8,15 @@ typedef enum{
     OBJECT
 } node_type;
 
+typedef struct node node;
+
 typedef union {
     int num_val; //for numbers, bools
     char* str_val; // for strings
     node* first_child; //for composite objects
 } node_val;
 
-typedef struct{
+typedef struct node{
     node_type type;
     node_val val;
     char* name;
