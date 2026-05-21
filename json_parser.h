@@ -40,3 +40,5 @@ node* parse_number(char**);
 void free_tree(node*);
 
 node* parse_json(char*);
+
+node* get(node*, char*);

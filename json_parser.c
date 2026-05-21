@@ -15,12 +15,6 @@ void skip_whitespaces(char** str){
     // printf("done skipping\n");
 }
 
-node* str_to_obj(char** str){
-    skip_whitespaces(str);
-
-}
-
-
 node* parse_val(char** str){
     skip_whitespaces(str);
     node* n = NULL;
@@ -182,6 +176,7 @@ node* parse_array(char** str){
     node* first_child = NULL;
     node* last_itr = NULL;
 
+    int added_cnt = 0;
     while(**str){
         skip_whitespaces(str);
   
@@ -190,7 +185,10 @@ node* parse_array(char** str){
             free_tree(n);
             return NULL;
         }
-        
+        char* name = (char*)malloc(20);
+        snprintf(name, sizeof(name), "%d", added_cnt++);
+        child->name = name; 
+        //to allow for get() to work as array access
         // link to the chain
         if(first_child == NULL){
             first_child = child;
@@ -301,6 +299,20 @@ node* parse_json(char* str){
     node* res = parse_object(itr);
     return res;
 }
+
+
+node* get(node* src, char* name){
+    if(!src || !(src->type != ARRAY && src->type != OBJECT) )
+        return NULL;
+    node* itr = src->val.first_child;
+    while(itr){
+        if (strcmp(itr->name, name) == 0)
+            return itr;
+        itr = itr->next;
+    }
+    return NULL;
+}
+
 
 // ---Testing----
 int main(){
