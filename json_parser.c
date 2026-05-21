@@ -113,8 +113,10 @@ node* parse_object(char** str){
     n->type = OBJECT;
 
     skip_whitespaces(str);
-    if(**str == '}')//empty
+    if(**str == '}'){//empty
+        *str += 1;
         return n;
+    }
     // printf("parsing object\n");
     node* first_child = NULL;
     node* last_itr = NULL;
