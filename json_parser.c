@@ -76,7 +76,7 @@ node* parse_key_val(char** str){
     
     *itr = '\0'; //trick strcpy
     strcpy(key, *str);
-    // printf("%s\n", key);
+    // printf("new key : %s\n", key);
     *itr = '\"'; // return to original
     
     *str = itr + 1; //move the pointer past the name
@@ -89,7 +89,7 @@ node* parse_key_val(char** str){
     *str += 1;
 
     skip_whitespaces(str);
-    // printf("%s\n", *str);
+    // printf("rem : %s\n", *str);
     
     //start processing the value
     node* n = parse_val(str);
@@ -157,11 +157,13 @@ node* parse_object(char** str){
         return NULL;
     }
     *str += 1; // skip the last brace
+    printf("%c\n", **str);
     return n;
 }
 
 node* parse_array(char** str){
     skip_whitespaces(str);
+    // printf("%c\n", **str);
     if(**str != '[')//malformed
         return NULL;
     *str += 1;
@@ -169,8 +171,11 @@ node* parse_array(char** str){
     n->type = ARRAY;
 
     skip_whitespaces(str);
-    if(**str == ']')//empty
+    if(**str == ']'){//empty
+        *str += 1;
         return n;
+    }
+        
 
     char* itr = *str;
     node* first_child = NULL;
@@ -217,6 +222,7 @@ node* parse_array(char** str){
         return NULL;
     }
     *str += 1; // skip the last bracket
+    // printf("finished array\n");
     return n;
 }
 
@@ -250,13 +256,14 @@ node* parse_string(char** str){
 }
 
 node* parse_number(char** str){
+    
     skip_whitespaces(str);
     char* itr = *str;
 
     while (*itr && isdigit(*itr)){
         itr++;
     }
-    if (!*itr){  //unbalanced
+    if (!(*itr)){  //unbalanced
         return NULL;
     }
 
@@ -264,14 +271,17 @@ node* parse_number(char** str){
     char old_val = *itr;
 
     *itr = '\0';
+
     int val = (int)strtol(*str, NULL, 10);
+    
     *itr = old_val;
 
-    *str = itr + 1; //move the pointer past the parsed
+    *str = itr; //move the pointer past the parsed
 
     node* n = (node*) malloc(sizeof(node));
     n->type = NUMBER;
     n->val.num_val = val;
+    // printf("%c\n", **str);
     return n;
 }
 
@@ -297,12 +307,13 @@ node* parse_json(char* str){
         return NULL;
     // printf("starting parsing\n");
     node* res = parse_object(itr);
+    // printf("finished parsing\n");
     return res;
 }
 
 
 node* get(node* src, char* name){
-    if(!src || !(src->type != ARRAY && src->type != OBJECT) )
+    if(!src || (src->type != ARRAY && src->type != OBJECT) )
         return NULL;
     node* itr = src->val.first_child;
     while(itr){
@@ -316,13 +327,13 @@ node* get(node* src, char* name){
 
 // ---Testing----
 int main(){
-    char json[] = "{ \"name\" : \"alex\", \"friends\" : [\"joseph\"]}";
+    char json[] = "{ \"name\" : \"alex\", \"friends\" : 5}";
     node* res = parse_json(json);
     if (!res)
     {
         printf("invalid json\n");
     } else {
-        printf("%s\n", res->val.first_child->next->val.first_child->val.str_val);
+        printf("%s\n", get(res, "name")->name);
     }
     
 }
