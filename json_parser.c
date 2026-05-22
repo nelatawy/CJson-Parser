@@ -39,7 +39,7 @@ node* parse_val(char** str){
     }
     else if(strcmp(*str, "null") == 0){
         *str += 4; // move forward
-        n = (node*)malloc(sizeof(node));
+        n = (node*)calloc(1, sizeof(node));
         n->type = NONE;
     }
     else if(**str == '\"'){
@@ -51,13 +51,13 @@ node* parse_val(char** str){
     } 
     else if(strcmp(*str, "true") == 0){
         *str += 4; // move forward
-        n = (node*)malloc(sizeof(node));
+        n = (node*)calloc(1,sizeof(node));
         n->type = BOOL;
         n->val.num_val = 1;
     }
     else if(strcmp(*str, "false") == 0){
         *str += 5; // move forward
-        n = (node*)malloc(sizeof(node));
+        n = (node*)calloc(1,sizeof(node));
         n->type = BOOL;
         n->val.num_val = 0;
     }
@@ -137,7 +137,7 @@ node* parse_object(char** str){
     if(**str != '{')//malformed
         return NULL;
     *str += 1;
-    node* n = (node*)malloc(sizeof(node));
+    node* n = (node*)calloc(1,sizeof(node));
     n->type = OBJECT;
 
     skip_whitespaces(str);
@@ -205,7 +205,7 @@ node* parse_array(char** str){
     if(**str != '[')//malformed
         return NULL;
     *str += 1;
-    node* n = (node*)malloc(sizeof(node));
+    node* n = (node*)calloc(1,sizeof(node));
     n->type = ARRAY;
 
     skip_whitespaces(str);
@@ -295,7 +295,7 @@ node* parse_string(char** str){
 
     *str = itr + 1; //move the pointer past the parsed
 
-    node* n = (node*) malloc(sizeof(node));
+    node* n = (node*) calloc(1, sizeof(node));
     n->type = STRING;
     n->val.str_val = val;
     return n;
@@ -332,7 +332,7 @@ node* parse_number(char** str){
 
     *str = itr; //move the pointer past the parsed
 
-    node* n = (node*) malloc(sizeof(node));
+    node* n = (node*) calloc(1, sizeof(node));
     n->type = NUMBER;
     n->val.num_val = val;
     return n;
