@@ -5,16 +5,29 @@
 #include <malloc.h>
 #include "json_parser.h"
 
+/**
+ * skip_whitespaces - Advances the string pointer past whitespace characters
+ * @param str: pointer to the current position in the JSON string
+ * 
+ * Skips spaces, tabs, and newlines to simplify token parsing.
+ */
 void skip_whitespaces(char** str){
-    // // printf("moving pointer\n");
     while((**str) && (**str == ' ' || **str == '\t' || **str == '\n')){
-        // printf("%c moving\n", **str);
         *str += 1;
         
     }
-    // printf("done skipping\n");
 }
 
+/**
+ * parse_val - Dispatcher that parses any JSON value type
+ * @param str pointer to the current position in the JSON string
+ * 
+ * Peeks at the next character and delegates to the appropriate parser:
+ * '{' -> parse_object(), '[' -> parse_array(), '"' -> parse_string(),
+ * digits/'-' -> parse_number(), 'true'/'false'/'null' -> handle directly
+ * 
+ * @return node representing the parsed value, or NULL on error
+ */
 node* parse_val(char** str){
     skip_whitespaces(str);
     node* n = NULL;
@@ -30,7 +43,7 @@ node* parse_val(char** str){
         n->type = NONE;
     }
     else if(**str == '\"'){
-        // printf("parsing str\n");
+
         n = parse_string(str);
     }
     else if(**str == '-' || isdigit(**str)){
@@ -49,17 +62,24 @@ node* parse_val(char** str){
         n->val.num_val = 0;
     }
     else if(!n){ // error
-        // printf("err parsing");
         return NULL;
     }
     return n;
 }
 
-/* Helper used in parse_object and parse_array*/
+/**
+ * parse_key_val - Parses a single key-value pair in a JSON object
+ * @param str: pointer to the current position in the JSON string
+ * 
+ * Expects format: "key" : value
+ * Extracts the key name and stores it in the returned node.
+ * Calls parse_val() to parse the value after the colon.
+ * 
+ * @return node with the value and name set, or NULL on error
+ */
 node* parse_key_val(char** str){
     skip_whitespaces(str);
     char* itr = *str;
-    // printf("%c\n", **str);
     if (**str != '\"')
         return NULL;
 
@@ -76,7 +96,7 @@ node* parse_key_val(char** str){
     
     *itr = '\0'; //trick strcpy
     strcpy(key, *str);
-    // printf("new key : %s\n", key);
+
     *itr = '\"'; // return to original
     
     *str = itr + 1; //move the pointer past the name
@@ -89,7 +109,6 @@ node* parse_key_val(char** str){
     *str += 1;
 
     skip_whitespaces(str);
-    // printf("rem : %s\n", *str);
     
     //start processing the value
     node* n = parse_val(str);
@@ -103,8 +122,17 @@ node* parse_key_val(char** str){
     return n;
 }
 
+/**
+ * parse_object - Parses a JSON object {...}
+ * @param str pointer to the current position in the JSON string
+ * 
+ * Expects format: { "key1": value1, "key2": value2, ... }
+ * Creates an OBJECT node and builds a linked list of key-value pairs as children.
+ * Returns an empty OBJECT node if the object is empty {}.
+ * 
+ * @return OBJECT node with children linked list, or NULL on error
+ */
 node* parse_object(char** str){
-    // // printf("%d\n", **str == ' ');
     skip_whitespaces(str);
     if(**str != '{')//malformed
         return NULL;
@@ -117,7 +145,6 @@ node* parse_object(char** str){
         *str += 1;
         return n;
     }
-    // printf("parsing object\n");
     node* first_child = NULL;
     node* last_itr = NULL;
 
@@ -159,13 +186,22 @@ node* parse_object(char** str){
         return NULL;
     }
     *str += 1; // skip the last brace
-    printf("%c\n", **str);
     return n;
 }
 
+/**
+ * parse_array - Parses a JSON array [...]
+ * @param str pointer to the current position in the JSON string
+ * 
+ * Expects format: [value1, value2, ...]
+ * Creates an ARRAY node and builds a linked list of values as children.
+ * Each element is given a numeric name (0, 1, 2, ...) for uniform access via get().
+ * Returns an empty ARRAY node if the array is empty [].
+ * 
+ * @return ARRAY node with children linked list, or NULL on error
+ */
 node* parse_array(char** str){
     skip_whitespaces(str);
-    // printf("%c\n", **str);
     if(**str != '[')//malformed
         return NULL;
     *str += 1;
@@ -209,7 +245,7 @@ node* parse_array(char** str){
         }
 
         skip_whitespaces(str);
-        if(**str == ']'){
+        if(**str == ']') {
             break; // exit the loop
         } else if(**str == ','){
             *str += 1; // go to next child
@@ -224,10 +260,18 @@ node* parse_array(char** str){
         return NULL;
     }
     *str += 1; // skip the last bracket
-    // printf("finished array\n");
     return n;
 }
 
+/**
+ * parse_string - Parses a quoted JSON string
+ * @param str pointer to the current position in the JSON string
+ * 
+ * Expects format: "string content"
+ * Allocates memory for the string and stores it in the node's val.str_val.
+ * 
+ * @return STRING node with allocated string value, or NULL on error
+ */
 node* parse_string(char** str){
     skip_whitespaces(str);
     if (**str != '\"')
@@ -246,7 +290,7 @@ node* parse_string(char** str){
     char* val = (char*)malloc(len + 1);
     *itr = '\0';
     strcpy(val, *str);
-    // printf("%s\n", val);
+
     *itr = '\"';
 
     *str = itr + 1; //move the pointer past the parsed
@@ -257,8 +301,16 @@ node* parse_string(char** str){
     return n;
 }
 
+/**
+ * parse_number - Parses a JSON number
+ * @param str pointer to the current position in the JSON string
+ * 
+ * Parses integer values (including negative numbers).
+ * Converts the string to an int using strtol().
+ * 
+ * @return NUMBER node with integer value, or NULL on error
+ */
 node* parse_number(char** str){
-    
     skip_whitespaces(str);
     char* itr = *str;
 
@@ -283,10 +335,16 @@ node* parse_number(char** str){
     node* n = (node*) malloc(sizeof(node));
     n->type = NUMBER;
     n->val.num_val = val;
-    // printf("%c\n", **str);
     return n;
 }
 
+/**
+ * free_tree - Recursively frees all allocated memory in the AST
+ * @param root the root node of the tree to free
+ * 
+ * Traverses the linked list of children and recursively frees each subtree,
+ * then frees the names and string values before freeing the nodes themselves.
+ */
 void free_tree(node* root){
     node* child_itr = root->val.first_child;
     while (child_itr)
@@ -298,22 +356,39 @@ void free_tree(node* root){
     
 }
 
-/*Entry point*/
-node* parse_json(char* str){ 
+/**
+ * parse_json - Entry point for parsing a JSON string
+ * @param str: the JSON string to parse
+ * 
+ * Expects a JSON object at the top level {...}.
+ * Creates a pointer-to-pointer to handle string advancement transparently.
+ * Skips leading whitespace and validates the opening brace.
+ * 
+ * @return root OBJECT node representing the entire JSON structure, or NULL on error
+ */
+node* parse_json(char* str) { 
     char**itr = &str; 
     // to make the signature easier to cope with
     // and to make the changes done in pointer traversal transparent to the passed pointer
     skip_whitespaces(itr);
-    // // printf("%c\n", **itr);
     if (**itr != '{') //malformed
         return NULL;
-    // printf("starting parsing\n");
     node* res = parse_object(itr);
-    // printf("finished parsing\n");
     return res;
 }
 
 
+/**
+ * get - Retrieves a child node by name from an OBJECT or ARRAY
+ * @param src the parent OBJECT or ARRAY node
+ * @param name the key name (for OBJECT) or index as string (for ARRAY, e.g., "0", "1")
+ * 
+ * Searches the linked list of children for a node with matching name.
+ * For ARRAY access, pass the index as a string (e.g., "2" for third element).
+ * For OBJECT access, pass the key name (e.g., "name", "age").
+ * 
+ * @return the child node if found, NULL otherwise
+ */
 node* get(node* src, char* name){
     if(!src || (src->type != ARRAY && src->type != OBJECT) )
         return NULL;

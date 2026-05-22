@@ -164,6 +164,29 @@ int main() {
 - **Get value**: `node->val.str_val` (STRING), `node->val.num_val` (NUMBER/BOOL)
 - **Check type**: `node->type` to determine which union member to access
 
+### Using the `get()` Method
+
+The `get()` function provides convenient access to child nodes without manual traversal:
+
+```c
+node* get(node* src, char* name);
+```
+
+- **For OBJECT access**: Pass the key name
+  ```c
+  node* name = get(root, "name");           // Access by key
+  printf("%s\n", name->val.str_val);        // Output: "alex"
+  ```
+
+- **For ARRAY access**: Pass the index as a string
+  ```c
+  node* first = get(array_node, "0");       // Access first element
+  node* second = get(array_node, "1");      // Access second element
+  printf("%s\n", first->val.str_val);
+  ```
+
+- **Return value**: Returns the node if found, or NULL if not found or if src is not an OBJECT/ARRAY
+
 ### Cleanup
 Always call `free_tree(root)` when done to avoid memory leaks. The function recursively frees all children.
 
