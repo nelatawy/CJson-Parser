@@ -83,7 +83,6 @@ node* parse_key_val(char** str){
     if (**str != '\"')
         return NULL;
 
-    // printf("parsing key val\n");
     *str += 1;
     itr = *str;
     while(*itr != '\"')
@@ -170,7 +169,6 @@ node* parse_object(char** str){
         }
 
         skip_whitespaces(str);
-        // printf("%c\n", **str);
         if(**str == '}'){
             break; // exit the loop
         } else if(**str == ','){
@@ -346,13 +344,28 @@ node* parse_number(char** str){
  * then frees the names and string values before freeing the nodes themselves.
  */
 void free_tree(node* root){
-    node* child_itr = root->val.first_child;
-    while (child_itr)
-    {   
-        node* temp = child_itr->next;
-        free_tree(child_itr);
-        child_itr = temp;
+    if (!root)
+        return;
+
+    if(root->name){
+        free(root->name);
     }
+    if (root->type == STRING && root->val.str_val)
+    {
+        free(root->val.str_val);
+    }
+
+    if (root->type == ARRAY || root->type == OBJECT)
+    {
+        node* child_itr = root->val.first_child;
+        while (child_itr)
+        {   
+            node* temp = child_itr->next;
+            free_tree(child_itr);
+            child_itr = temp;
+        }
+    }
+    free(root);
     
 }
 
@@ -403,7 +416,7 @@ node* get(node* src, char* name){
 
 
 // ---Testing----
-int main(){
+static int main(){
     char json[] = "{ \"name\" : \"alex\", \"friends\" : 5}";
     node* res = parse_json(json);
     if (!res)
